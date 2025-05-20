@@ -619,23 +619,118 @@ function renderMedicationTable(page = 1, pageSize = 5) {
 
 // 更新分页控件
 function updatePaginationControls(currentPage, totalPages) {
-    const paginationNav = document.querySelector('.pagination-nav');
-    if (!paginationNav) return;
+    const paginationContainer = document.querySelector('.pagination-nav');
+    if (!paginationContainer) {
+        console.error('找不到分页导航元素 .pagination-nav');
+        return;
+    }
 
-    paginationNav.innerHTML = '';
-    for (let i = 1; i <= totalPages; i++) {
-        const a = document.createElement('a');
-        a.href = '#';
-        a.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50';
-        if (i === currentPage) {
-            a.classList.add('bg-primary', 'text-white');
+    paginationContainer.innerHTML = '';
+    
+    // 添加上一页按钮
+    const prevButton = document.createElement('a');
+    prevButton.href = '#';
+    prevButton.className = 'relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50';
+    prevButton.innerHTML = '<span class="sr-only">上一页</span><i class="fa-solid fa-chevron-left"></i>';
+    if (currentPage > 1) {
+        prevButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            renderMedicationTable(currentPage - 1);
+        });
+    } else {
+        prevButton.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+    paginationContainer.appendChild(prevButton);
+    
+    // 添加页码按钮
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    // 第一页
+    if (startPage > 1) {
+        const firstPageBtn = document.createElement('a');
+        firstPageBtn.href = '#';
+        firstPageBtn.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50';
+        firstPageBtn.textContent = '1';
+        firstPageBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            renderMedicationTable(1);
+        });
+        paginationContainer.appendChild(firstPageBtn);
+        
+        // 省略号
+        if (startPage > 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700';
+            ellipsis.textContent = '...';
+            paginationContainer.appendChild(ellipsis);
         }
-        a.textContent = i;
-        a.addEventListener('click', (e) => {
+    }
+    
+    // 页码
+    for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('a');
+        pageBtn.href = '#';
+        pageBtn.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50';
+        if (i === currentPage) {
+            pageBtn.classList.add('bg-primary', 'text-white');
+        }
+        pageBtn.textContent = i;
+        pageBtn.addEventListener('click', (e) => {
             e.preventDefault();
             renderMedicationTable(i);
         });
-        paginationNav.appendChild(a);
+        paginationContainer.appendChild(pageBtn);
+    }
+    
+    // 最后一页
+    if (endPage < totalPages) {
+        // 省略号
+        if (endPage < totalPages - 1) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700';
+            ellipsis.textContent = '...';
+            paginationContainer.appendChild(ellipsis);
+        }
+        
+        const lastPageBtn = document.createElement('a');
+        lastPageBtn.href = '#';
+        lastPageBtn.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50';
+        lastPageBtn.textContent = totalPages;
+        lastPageBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            renderMedicationTable(totalPages);
+        });
+        paginationContainer.appendChild(lastPageBtn);
+    }
+    
+    // 添加下一页按钮
+    const nextButton = document.createElement('a');
+    nextButton.href = '#';
+    nextButton.className = 'relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50';
+    nextButton.innerHTML = '<span class="sr-only">下一页</span><i class="fa-solid fa-chevron-right"></i>';
+    if (currentPage < totalPages) {
+        nextButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            renderMedicationTable(currentPage + 1);
+        });
+    } else {
+        nextButton.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+    paginationContainer.appendChild(nextButton);
+    
+    // 更新显示信息
+    const paginationInfo = document.querySelector('.pagination-info');
+    if (paginationInfo) {
+        const start = (currentPage - 1) * 5 + 1;
+        const end = Math.min(currentPage * 5, totalPages * 5);
+        const total = totalPages * 5;
+        paginationInfo.innerHTML = `显示第 <span class="font-medium">${start}</span> 到 <span class="font-medium">${end}</span> 条，共 <span class="font-medium">${total}</span> 条结果`;
     }
 }
 
