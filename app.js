@@ -521,6 +521,31 @@ function getMedications() {
     return JSON.parse(localStorage.getItem('medications')) || [];
 }
 
+//保存药品数据
+function handleAddMedication() {
+    const name = document.getElementById('medication-name').value;
+    const brand = document.getElementById('medication-brand').value;
+    const dose = document.getElementById('medication-dose').value;
+    const purpose = document.getElementById('medication-purpose').value;
+    const expiration = document.getElementById('medication-expiration').value;
+    const quantity = document.getElementById('medication-quantity').value;
+    const image = document.getElementById('preview-image').src;
+
+    const med = {
+        name,
+        brand,
+        dose,
+        purpose,
+        expiration,
+        quantity,
+        image
+    };
+
+    saveMedication(med);
+    renderMedicationTable();
+    closeMedicationModal();
+    showToast('药品添加成功！');
+}
 // 保存药品到 localStorage
 function saveMedication(med) {
     const meds = getMedications();
@@ -652,6 +677,49 @@ function saveSchedule(schedule) {
     localStorage.setItem('schedules', JSON.stringify(schedules));
 }
 
+function searchMedications() {
+    const searchInput = document.getElementById('search-medication');
+    const keyword = searchInput.value.toLowerCase();
+    const medications = getMedications();
+    const filteredMedications = medications.filter(med => {
+        return med.name.toLowerCase().includes(keyword) || (med.brand && med.brand.toLowerCase().includes(keyword));
+    });
+
+    const tbody = document.querySelector('#medication-table-body');
+    if (!tbody) {
+        console.error('找不到药品表格元素 #medication-table-body');
+        return;
+    }
+    
+    tbody.innerHTML = '';
+
+    filteredMedications.forEach((med, index) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-gray-50 transition-colors";
+        tr.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                    ${med.image ? `<img src="${med.image}" alt="" class="w-10 h-10 rounded-lg mr-3">` : '<div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mr-3"><i class="fa-solid fa-pill text-primary"></i></div>'}
+                    <div>
+                        <div class="font-medium text-gray-900">${med.name}</div>
+                        <div class="text-sm text-gray-500">${med.brand || ''}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">${med.dose || ''}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${med.purpose || ''}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${med.expiration || ''}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">正常</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <button class="text-primary hover:text-primary/80 mr-3" onclick="editMedication(${index})"><i class="fa-solid fa-pencil"></i></button>
+                <button class="text-danger hover:text-danger/80" onclick="deleteMedication(${index})"><i class="fa-solid fa-trash"></i></button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
 // 初始化图表
 function initCharts() {
     try {

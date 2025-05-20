@@ -1080,6 +1080,7 @@
             document.getElementById('add-medication-form').addEventListener('submit', function(e) {
                 e.preventDefault();
                 // 处理表单提交逻辑
+                handleAddMedication();
                 closeMedicationModal();
                 showToast('药品添加成功！');
             });
