@@ -527,24 +527,41 @@ function handleAddMedication() {
     const brand = document.getElementById('medication-brand').value;
     const dose = document.getElementById('medication-dose').value;
     const purpose = document.getElementById('medication-purpose').value;
+    const instructions = document.getElementById('medication-instructions')?.value || '';
     const expiration = document.getElementById('medication-expiration').value;
     const quantity = document.getElementById('medication-quantity').value;
-    const image = document.getElementById('preview-image').src;
+    const previewImage = document.getElementById('preview-image');
+    const image = previewImage && previewImage.src !== '' ? previewImage.src : '';
 
     const med = {
+        id: Date.now(),
         name,
         brand,
         dose,
         purpose,
+        instructions,
         expiration,
         quantity,
         image
     };
 
-    saveMedication(med);
+    // 检查是否是编辑模式
+    const form = document.getElementById('add-medication-form');
+    const editIndex = form ? form.dataset.editIndex : undefined;
+    
+    if (editIndex !== undefined) {
+        // 更新现有药品
+        const meds = getMedications();
+        meds[editIndex] = { ...meds[editIndex], ...med };
+        localStorage.setItem('medications', JSON.stringify(meds));
+        showToast('药品更新成功！');
+    } else {
+        // 添加新药品
+        saveMedication(med);
+        showToast('药品添加成功！');
+    }
+    
     renderMedicationTable();
-    closeMedicationModal();
-    showToast('药品添加成功！');
 }
 // 保存药品到 localStorage
 function saveMedication(med) {
